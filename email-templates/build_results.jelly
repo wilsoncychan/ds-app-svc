@@ -1,0 +1,145 @@
+<?jelly escape-by-default='true'?>
+<!DOCTYPE html [
+        <!ENTITY nbsp "&#38;#38;nbsp&#59;">
+]>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+
+    <STYLE>
+        BODY, TABLE, TD, TH, P {
+            font-family:Verdana,Helvetica,sans serif;
+            font-size:11px;
+            color:black;
+        }
+        h1 { color:black; }
+        h2 { color:black; }
+        h3 { color:black; }
+        TD.bg1 { color:white; background-color:#0000C0; font-size:120% }
+        TD.bg2 { color:black; background-color:#FFFFCC; font-size:110% }
+        TD.bg3 { color:white; background-color:#8080FF; }
+        TD.test_passed { color:blue; }
+        TD.test_failed { color:red; }
+        TD.console { font-family:Courier New; }
+    </STYLE>
+    <BODY>
+
+
+    <!-- GENERAL INFO -->
+
+    <TABLE>
+        <j:set var="jacocoAction" value="${it.getAction('hudson.plugins.jacoco.JacocoBuildAction')}" />
+        <j:if test="${jacocoAction!=null}">
+            <j:set var="jacocoResult" value="${jacocoAction.result}" />
+            <j:if test="${jacocoResult!=null}">
+                <j:choose>
+                    <j:when test="${jacocoResult.lineCoverage.percentage &lt; 100}">
+                        <TR>
+                            <TD colspan="2" style="font-family:Arial,San-Serif;font-weight:bold;font-size:18px;background-color:#CC0000;color:#FFFFFF;padding:5px">
+                                Overall Line Coverage: ${jacocoResult.lineCoverage.percentage}%
+                            </TD>
+                        </TR>
+                    </j:when>
+                    <j:otherwise>
+                        <TR>
+                            <TD colspan="2" style="font-family:Arial,San-Serif;font-weight:bold;font-size:18px;background-color:#B6EFD3;color:#000000;padding:5px">
+                                Overall Line Coverage: ${jacocoResult.lineCoverage.percentage}%
+                            </TD>
+                        </TR>
+                    </j:otherwise>
+                </j:choose>
+                <TR><TD colspan="2" style="line-height: 4px;">&nbsp;</TD></TR>
+            </j:if>
+        </j:if>
+        <TR><TD>Build Status:</TD><TD>
+            <j:choose>
+                <j:when test="${build.result==null}">
+                    SUCCESS
+                </j:when>
+                <j:otherwise>
+                    ${build.result}
+                </j:otherwise>
+            </j:choose>
+        </TD></TR>
+        <TR><TD>Pipeline:</TD><TD><a href="${rooturl}${build.url}/testReport">${project.name}</a></TD></TR>
+        <TR><TD>Date run:</TD><TD>${it.timestampString}</TD></TR>
+        <TR><TD>Duration:</TD><TD>${build.durationString}</TD></TR>
+        <TR><TD colspan="2"><HR /></TD></TR>
+        <TR><TD colspan="2">
+            <!-- JUnit TEMPLATE -->
+
+            <j:set var="junitResultList" value="${it.JUnitTestResult}" />
+            <j:if test="${junitResultList.isEmpty()!=true}">
+                <TABLE width="100%">
+                    <TR><TD class="bg1" style="color:black; background-color:white; font-size:120%; font-weight: bold" colspan="2">
+                        Test Summary&nbsp;&nbsp;
+                        <a href="${rooturl}${build.url}/testReport">&gt;&gt;&nbsp;Go to full report</a>
+                    </TD></TR>
+                    <j:forEach var="junitResult" items="${it.JUnitTestResult}">
+                        <j:forEach var="packageResult" items="${junitResult.getChildren()}">
+                            <TR><TD class="bg2" style="color:black; background-color:#FFFFCC; font-size:110%; font-weight: bold" colspan="2">${packageResult.getName()}</TD></TR>
+                            <TR><TD class="bg2" style="color:black; background-color:#FFFFCC; font-size:110%" colspan="2">Failed: ${packageResult.getFailCount()} test(s), Passed: ${packageResult.getPassCount()} test(s), Skipped: ${packageResult.getSkipCount()} test(s), Total: ${packageResult.getPassCount()+packageResult.getFailCount()+packageResult.getSkipCount()} test(s)</TD></TR>
+                            <j:forEach var="test" items="${packageResult.getPassedTests()}">
+                                <j:if test="${test.status == 'FIXED'}">
+                                    <TR bgcolor="white"><TD class="test_passed" style="color:blue;" colspan="2"><B><li>Fixed: ${test.getFullName()} (${test.getAge()})</li></B></TD></TR>
+                                </j:if>
+                            </j:forEach>
+                            <j:forEach var="failed_test" items="${packageResult.getFailedTests()}">
+                                <TR bgcolor="white"><TD class="test_failed" style="color:red;" colspan="2"><B><li>Failed: ${failed_test.getFullName()} (${failed_test.getAge()})</li></B></TD></TR>
+                            </j:forEach>
+                        </j:forEach>
+                        <TR><TD class="bg2" style="color:black; background-color:#EEEEEE; font-size:110%; font-weight: bold" colspan="2">(Total)</TD></TR>
+                        <TR><TD class="bg2" style="color:black; background-color:#FFFFCC; font-size:110%" colspan="2">Failed: ${junitResult.getFailCount()} test(s), Passed: ${junitResult.getPassCount()} test(s), Skipped: ${junitResult.getSkipCount()} test(s), Total: ${junitResult.getPassCount()+junitResult.getFailCount()+junitResult.getSkipCount()} test(s)</TD></TR>
+                    </j:forEach>
+                </TABLE>
+                <BR/>
+            </j:if>
+        </TD></TR>
+        <TR><TD colspan="2">
+            &nbsp;
+        </TD></TR>
+        <TR><TD colspan="2">
+            <!-- JACOCO TEMPLATE -->
+
+            <j:set var="jacocoAction" value="${it.getAction('hudson.plugins.jacoco.JacocoBuildAction')}" />
+            <j:if test="${jacocoAction!=null}">
+                <j:set var="jacocoResult" value="${jacocoAction.result}" />
+                <j:if test="${jacocoResult!=null}">
+                    <TABLE width="100%">
+                        <TR><TD class="bg1" style="color:black; background-color:white; font-size:120%; font-weight: bold" colspan="4">
+                            Code Coverage Summary&nbsp;&nbsp;
+                            <a href="${rooturl}${build.url}/jacoco">&gt;&gt;&nbsp;Go to full report</a>
+                        </TD></TR>
+                        <TR>
+                            <TD class="bg2" style="color:black; background-color:#EEEEEE; font-size:110%; font-weight: bold; text-decoration: underline">Package</TD>
+                            <TD class="bg2" style="color:black; background-color:#EEEEEE; font-size:110%; font-weight: bold; text-decoration: underline;min-width: 120px">Line Coverage %</TD>
+                            <TD class="bg2" style="color:black; background-color:#EEEEEE; font-size:110%; font-weight: bold; text-decoration: underline;min-width: 140px">Method Coverage %</TD>
+                            <TD class="bg2" style="color:black; background-color:#EEEEEE; font-size:110%; font-weight: bold; text-decoration: underline;min-width: 130px">Class Coverage %</TD>
+                        </TR>
+                        <j:forEach var="child" items="${jacocoResult.getChildren().entrySet()}">
+                            <j:set var="cResult" value="${child.value}"/>
+                            <TR>
+                                <TD class="bg2" style="color:black; background-color:#FFFFCC; font-size:110%">${child.key}</TD>
+                                <TD class="bg2" style="color:black; background-color:#FFFFCC; font-size:110%">${cResult.lineCoverage.percentage}%</TD>
+                                <TD class="bg2" style="color:black; background-color:#FFFFCC; font-size:110%">${cResult.methodCoverage.percentage}%</TD>
+                                <TD class="bg2" style="color:black; background-color:#FFFFCC; font-size:110%">${cResult.classCoverage.percentage}%</TD>
+                            </TR>
+                        </j:forEach>
+                        <TR>
+                            <TD colspan="4" class="bg2" style="color:black; background-color:#EEEEEE; font-size:110%; font-weight: bold">(Overall)</TD>
+                        </TR>
+                        <TR>
+                            <TD colspan="4" class="bg2" style="color:black; background-color:#FFFFCC; font-size:110%">
+                                Line Coverage ${jacocoResult.lineCoverage.percentage}%,
+                                Method Coverage ${jacocoResult.methodCoverage.percentage}%,
+                                Class Coverage ${jacocoResult.classCoverage.percentage}%
+                            </TD>
+                        </TR>
+                    </TABLE>
+
+                </j:if>
+            </j:if>
+        </TD></TR>
+    </TABLE>
+    <BR/>
+
+    </BODY>
+</j:jelly>
