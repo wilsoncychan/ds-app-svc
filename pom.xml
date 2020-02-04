@@ -107,6 +107,10 @@
 							<haltOnFailure>true</haltOnFailure>
 							<rules>
 								<rule>
+									<excludes>
+										<exclude>**/*Test.*</exclude>
+										<exclude>**/DsAppSvcApplication.*</exclude>
+									</excludes>
 									<element>BUNDLE</element>
 									<limits>
 										<limit>
