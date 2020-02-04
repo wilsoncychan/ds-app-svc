@@ -16,7 +16,8 @@ node {
 
         stage('Build') {
             withMaven(
-                maven:"maven3"
+                maven:"maven3",
+                options: [jacocoPublisher(disabled: true)]
             ) {
                 sh """
                     mvn clean verify
