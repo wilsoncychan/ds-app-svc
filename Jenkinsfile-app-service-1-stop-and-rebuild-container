@@ -13,15 +13,14 @@ node {
 
         stage('Prepare Artefacts') {
             sh '''
-                if [ ! -d "./target" ]; then
-                    mkdir -p "./target"
-                fi
+                rm -rf ./target
+                mkdir -p "./target"
             '''
-            copyArtifacts(filter: '=ds-app-svc-0.0.1-SNAPSHOT.jar',
-                    fingerprintArtifacts: true,
+            copyArtifacts(
                     projectName: 'Build App Service',
-                    target: 'target',
+                    filter: '**/*.jar',
                     selector: lastSuccessful(),
+                    target: 'target',
                     flatten: true);
         }
 
