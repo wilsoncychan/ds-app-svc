@@ -14,12 +14,12 @@ services:
     networks:
       - ds-net
     depends_on:
-      - "rdb"
+      - "ds-rdb"
     environment:
       - logging.file=/var/log/spring.log
       - logging.level.org.hibernate=WARN
-  rdb:
-    container_name: rdb
+  ds-rdb:
+    container_name: ds-rdb
     image: postgres:9.6.16
     volumes:
       - ./db/data:/var/lib/postgres

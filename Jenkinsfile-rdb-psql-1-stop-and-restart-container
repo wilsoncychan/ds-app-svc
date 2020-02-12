@@ -1,0 +1,36 @@
+#!groovy
+
+node {
+    try {
+
+        timeout(time:10, unit:'MINUTES') {
+            stage('Checkout') {
+
+                // Clean workspace before doing anything
+                deleteDir()
+
+                checkout scm
+            }
+            stage('Stop PostgreSQL') {
+                sh '''
+                    sudo docker-compose kill ds-rdb
+                '''
+            }
+            stage('Cleanup terminated instances') {
+                sh '''
+                    sudo docker ps -a | grep -v CONTAINER | grep postgres | cut -d' ' -f1 | while read cid; do sudo docker rm $cid; done
+                '''
+            }
+            stage('Restart PostgreSQL') {
+                sh '''
+                    sudo docker-compose -f docker-compose.yml up -d ds-rdb
+                '''
+            }
+        }
+
+        currentBuild.result = 'SUCCESS';
+    } catch (err) {
+        currentBuild.result = 'FAILED';
+    } finally {
+    }
+}
