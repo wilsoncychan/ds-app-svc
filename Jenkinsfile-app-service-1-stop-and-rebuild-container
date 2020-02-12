@@ -11,6 +11,23 @@ node {
             checkout scm
         }
 
+        stage('Prepare Artefacts') {
+            sh '''
+                if [ ! -d "./target" ]; then
+                    mkdir -p "./target"
+                fi
+            '''
+            copyArtifacts('Build App Service') {
+                includePatterns('ds-app-svc-*.jar')
+                targetDirectory('target')
+                flatten()
+                optional()
+                buildSelector {
+                    latestSuccessful(true)
+                }
+            }
+        }
+
         stage('Stop ds-app-svc') {
             sh '''
                 sudo docker-compose kill ds-app-svc
