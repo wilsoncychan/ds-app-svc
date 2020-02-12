@@ -17,7 +17,12 @@ node {
                     mkdir -p "./target"
                 fi
             '''
-            copyArtifacts(filter: 'target/ds-app-svc-0.0.1-SNAPSHOT.jar', fingerprintArtifacts: true, projectName: 'Build App Service', target: 'target');
+            copyArtifacts(filter: '=ds-app-svc-0.0.1-SNAPSHOT.jar',
+                    fingerprintArtifacts: true,
+                    projectName: 'Build App Service',
+                    target: 'target',
+                    selector: lastSuccessful(),
+                    flatten: true);
         }
 
         stage('Stop ds-app-svc') {
