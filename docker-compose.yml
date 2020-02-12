@@ -32,8 +32,8 @@ services:
         aliases:
           - database
     environment:
-      - POSTGRES_DB=hsbc_onboarding
-      - POSTGRES_USER=hsbc_onboarding
+      - POSTGRES_DB=ds_rdb
+      - POSTGRES_USER=ds_rdb_user
       - POSTGRES_PASSWORD=P@ssw0rd
 
 networks:

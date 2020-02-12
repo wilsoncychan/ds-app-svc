@@ -1,0 +1,32 @@
+server:
+  port: 8090
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 2048
+
+spring:
+  jackson:
+    default-property-inclusion: NON_NULL
+  application:
+    name: ds-app-svc
+  datasource:
+    type: org.apache.tomcat.jdbc.pool.DataSource
+    dataSourceClassName: org.postgresql.ds.PGPoolingDataSource
+    url: jdbc:postgresql://localhost:5432/ds_rdb?useSSL=false&requireSSL=false&useUnicode=yes&characterEncoding=UTF-8
+    username: ds_rdb_user
+    password: P@ssw0rd
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database: PostgreSQL
+    openInView: false
+    show_sql: false
+    generate-ddl: false
+    hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: none
+      naming-strategy: org.hibernate.cfg.EJB3NamingStrategy
+    properties:
+      hibernate.cache.use_second_level_cache: false
+      hibernate.cache.use_query_cache: false
+      hibernate.generate_statistics: true
