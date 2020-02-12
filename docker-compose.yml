@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+  ds-app-svc:
+    container_name: ds-app-svc
+    image: ds-app-svc:0.0.1
+    volumes:
+      - ./log:/var/log
+    build:
+      context: .
+      args:
+        JAR_FILE: "target/ds-app-svc-0.0.1-SNAPSHOT.jar"
+    ports:
+      - "8090:8090"
+    networks:
+      - ds-net
+    depends_on:
+      - "rdb"
+    environment:
+      - logging.file=/var/log/spring.log
+      - logging.level.org.hibernate=WARN
+  rdb:
+    container_name: rdb
+    image: postgres:9.6.16
+    volumes:
+      - ./db/data:/var/lib/postgres
+      - ./data-schema:/devops/data-schema
+      - ./data-schema-changes:/devops/db-schema-changes
+    ports:
+      - "5432:5432"
+    networks:
+      ds-net:
+        aliases:
+          - database
+    environment:
+      - POSTGRES_DB=hsbc_onboarding
+      - POSTGRES_USER=hsbc_onboarding
+      - POSTGRES_PASSWORD=P@ssw0rd
+
+networks:
+  ds-net:
+    name: ds-net

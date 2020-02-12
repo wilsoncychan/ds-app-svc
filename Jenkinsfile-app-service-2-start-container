@@ -1,0 +1,26 @@
+#!groovy
+
+node {
+    try {
+
+        stage('Checkout') {
+
+            // Clean workspace before doing anything
+            deleteDir()
+
+            checkout scm
+        }
+
+        stage('Start ds-app-svc') {
+            sh '''
+                sudo docker-compose up -d ds-app-svc
+            '''
+        }
+
+        currentBuild.result = 'SUCCESS';
+
+    } catch (err) {
+        currentBuild.result = 'FAILED';
+    } finally {
+    }
+}

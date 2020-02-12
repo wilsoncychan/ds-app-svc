@@ -1,0 +1,44 @@
+#!groovy
+
+node {
+    try {
+
+        stage('Checkout') {
+
+            // Clean workspace before doing anything
+            deleteDir()
+
+            checkout scm
+        }
+
+        stage('Stop ds-app-svc') {
+            sh '''
+                sudo docker-compose kill ds-app-svc
+            '''
+        }
+
+        stage('Cleanup terminated instances') {
+            sh '''
+                sudo docker ps -a | grep -v CONTAINER | grep ds-app-svc | cut -d' ' -f1 | while read cid; do sudo docker rm $cid; done
+            '''
+        }
+
+        stage('Cleanup old images') {
+            sh '''
+                sudo docker images | grep -v REPOSITORY | grep ds-app-svc | awk '{print $3}' | while read img; do sudo docker rmi $img; done
+            '''
+        }
+
+        stage('Re-build ds-app-svc') {
+            sh '''
+                sudo docker-compose build ds-app-svc
+            '''
+        }
+
+        currentBuild.result = 'SUCCESS';
+
+    } catch (err) {
+        currentBuild.result = 'FAILED';
+    } finally {
+    }
+}
