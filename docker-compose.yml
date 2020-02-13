@@ -24,7 +24,7 @@ services:
     volumes:
       - ./db/data:/var/lib/postgres
       - ./data-schema:/devops/data-schema
-      - ./data-schema-changes:/devops/db-schema-changes
+      - ./data-schema-changes:/devops/data-schema-changes
     ports:
       - "5432:5432"
     networks:
