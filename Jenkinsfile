@@ -30,7 +30,7 @@ node {
                 classPattern: "target/classes/com/rad/kit/dsappsvc/service",
                 execPattern: "target/jacoco.exec",
                 inclusionPattern: '**/*.class',
-                exclusionPattern: '**/DsAppSvcApplication.class',
+                exclusionPattern: '**/DsAppSvcApplication.class,**/DsAppSvcConfig.class',
                 sourceInclusionPattern: '**/*.java',
                 sourcePattern: 'src/main/java',
                 buildOverBuild: true,

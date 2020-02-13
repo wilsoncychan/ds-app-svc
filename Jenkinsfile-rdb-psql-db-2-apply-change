@@ -1,0 +1,61 @@
+#!groovy
+
+node {
+    try {
+
+        timeout(time:10, unit:'MINUTES') {
+            stage('Checkout') {
+
+                // Clean workspace before doing anything
+                deleteDir()
+
+                checkout scm
+            }
+        }
+
+        timeout(time:10, unit:'MINUTES') {
+            stage('Apply Database Changes') {
+                sh '''
+
+                    databaseInstanceName="ds-rdb";
+                    databaseUser="ds_rdb_user";
+                    databasePwd="P@ssw0rd";
+
+                    containerId=$(sudo docker ps -a | grep "$databaseInstanceName" | head -n 1 | cut -d" " -f1)
+
+                    if [ ! -z "$containerId" -a "$containerId" != " " ]; then
+
+                        maxVersionNum=$(sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=ds_rdb -t -c "select case when max(version_number) is null then 0 else max(version_number) end as max_version_num from DB_VERSIONS"')
+
+                        nextVersionNum=$((maxVersionNum+1))
+
+                        echo "$nextVersionNum"
+
+                        while [ -f "$JENKINS_HOME/corporate-onboarding-app-service/data-schema-changes/$nextVersionNum.sql" ]
+                        do
+
+                            echo "execute this version $nextVersionNum.sql"
+
+                            sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=ds_rdb -f "/devops/data-schema-changes/'$nextVersionNum'.sql"'
+
+                            echo "Add executed version into database"
+
+                            sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=ds_rdb -c "insert into DB_VERSIONS(VERSION_NUMBER, REC_CREAT_DT_TM) values ('$nextVersionNum', now())"'
+
+                            updatedMaxVersionNum=$(sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=ds_rdb -t -c "select case when max(version_number) is null then 0 else max(version_number) end as max_version_num from DB_VERSIONS"')
+
+                            echo "updatedMaxVersionNum: $updatedMaxVersionNum"
+
+                            nextVersionNum=$((nextVersionNum+1))
+                        done
+                    fi
+                '''
+            }
+        }
+
+        currentBuild.result = 'SUCCESS';
+    } catch (err) {
+        currentBuild.result = 'FAILED';
+    } finally {
+    }
+}

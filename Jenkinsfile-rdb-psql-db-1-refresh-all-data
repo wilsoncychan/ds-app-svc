@@ -1,0 +1,62 @@
+#!groovy
+
+node {
+    try {
+
+        timeout(time:10, unit:'MINUTES') {
+            stage('Checkout') {
+
+                // Clean workspace before doing anything
+                deleteDir()
+
+                checkout scm
+            }
+        }
+
+        timeout(time:10, unit:'MINUTES') {
+            stage('Cleanup all data') {
+                sh '''
+
+                    databaseInstanceName="ds-rdb";
+                    databaseUser="ds_rdb_user";
+                    databasePwd="P@ssw0rd";
+
+                    containerId=$(sudo docker ps -a | grep "$databaseInstanceName" | head -n 1 | cut -d" " -f1)
+
+                    if [ ! -z "$containerId" -a "$containerId" != " " ]; then
+
+                        echo "revoke connection to db"
+
+                        sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=ds_rdb -c "REVOKE CONNECT ON DATABASE ds_rdb FROM ds_rdb_user"'
+
+                        echo "terminate all current connections"
+
+                        sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=ds_rdb -c "SELECT pid, pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid()"'
+
+                        echo "drop database"
+
+                        sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=postgres -c "drop database ds_rdb"'
+
+                        echo "create database"
+
+                        sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=postgres -c "create database ds_rdb"'
+
+                        echo "create the schema"
+
+                        sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=ds_rdb -f "/devops/data-schema/psql-schema.sql"'
+
+                        echo "load bootstrap data"
+
+                        sudo docker exec -i $containerId /bin/sh -c 'PGPASSWORD='$databasePwd' psql -U '$databaseUser' --dbname=ds_rdb -f "/devops/data-schema/psql-basic-data.sql"'
+                    fi
+
+                '''
+            }
+        }
+
+        currentBuild.result = 'SUCCESS';
+    } catch (err) {
+        currentBuild.result = 'FAILED';
+    } finally {
+    }
+}
