@@ -29,7 +29,7 @@ public class DemoController {
         this.modelMapper = modelMapper;
     }
 
-    @GetMapping("/get-all-demo-messages")
+    @GetMapping("/demo/get-all-messages")
     @ResponseBody
     public List<DemoMessageDto> getAllDemoMessages() {
         List<DemoMessage> demoMessages = demoSvc.getAllDemoMessages();

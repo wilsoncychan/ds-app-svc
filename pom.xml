@@ -92,6 +92,7 @@
 					<excludes>
 						<exclude>com/rad/kit/dsappsvc/DsAppSvcApplication.*</exclude>
 						<exclude>com/rad/kit/dsappsvc/DsAppSvcConfig.*</exclude>
+						<exclude>com/rad/kit/dsappsvc/SimpleWebSecurityConfiguration.*</exclude>
 					</excludes>
 				</configuration>
 				<executions>
