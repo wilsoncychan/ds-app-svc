@@ -18,7 +18,7 @@ node {
             }
             stage('Cleanup terminated instances') {
                 sh '''
-                    sudo docker ps -a | grep -v CONTAINER | grep postgres | cut -d' ' -f1 | while read cid; do sudo docker rm $cid; done
+                    sudo docker ps -a | grep -v CONTAINER | grep ds-rdb | cut -d' ' -f1 | while read cid; do sudo docker rm $cid; done
                 '''
             }
             stage('Restart PostgreSQL') {

@@ -20,7 +20,10 @@ services:
       - logging.level.org.hibernate=WARN
   ds-rdb:
     container_name: ds-rdb
-    image: postgres:9.6.16
+    image: ds-rdb:0.0.1
+    build:
+      context: .
+      dockerfile: postgre-dockerfile
     volumes:
       - ./db/data:/var/lib/postgres
       - ./data-schema:/devops/data-schema

@@ -1,0 +1,5 @@
+FROM postgres:9.6.16
+
+COPY --chown=1001:0 data-schema/psql-schema.sql /devops/data-schema/
+COPY --chown=1001:0 data-schema/psql-basic-data.sql /devops/data-schema/
+COPY --chown=1001:0 data-schema-changes/1.sql /devops/data-schema-changes/
